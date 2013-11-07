@@ -28,9 +28,9 @@ class action_plugin_hipchat extends DokuWiki_Action_Plugin {
     }
 
     function handle_action_act_preprocess(&$event, $param) {
-
+        global $lang;
         if (isset($event->data['save'])) {
-            if ($event->data['save'] == 'Save') {
+            if ($event->data['save'] == $lang['btn_save']) {
                 $this->handle();
             }
         }
