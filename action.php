@@ -7,7 +7,7 @@
  *
  * DokuWiki log: https://github.com/cosmocode/log.git
  * @author  Adrian Lang <lang@cosmocode.de> 2010-03-28
- * 
+ *
  * Hippy: https://github.com/rcrowe/Hippy.git
  * @author Rob Crowe <rcrowe@github>
  */
@@ -19,8 +19,7 @@ if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
 if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
 if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 
-require_once 'lib/hippy/Hippy.php';
-require_once DOKU_PLUGIN.'action.php';
+require 'vendor/autoload.php';
 
 class action_plugin_hipchat extends DokuWiki_Action_Plugin {
 
@@ -39,21 +38,9 @@ class action_plugin_hipchat extends DokuWiki_Action_Plugin {
     }
 
     private function handle() {
-    	global $SUM;
-		global $INFO;
-		
-		$fullname = $INFO['userinfo']['name'];
-		$username = $INFO['client'];
-		$page     = $INFO['namespace'] . $INFO['id'];
-		$summary  = $SUM;
-		$minor    = (boolean) $_REQUEST['minor'];
-		
-        $config = array( 
-                'token'      => $this->getConf('hipchat_token'),
-                'room'       => $this->getConf('hipchat_room'),
-                'from'       => $this->getConf('hipchat_name'));
-		Hippy::config($config);
-		
+       global $SUM;
+        global $INFO;
+
         /* Namespace filter */
         $ns = $this->getConf('hipchat_namespaces');
         if (!empty($ns)) {
@@ -64,11 +51,26 @@ class action_plugin_hipchat extends DokuWiki_Action_Plugin {
             }
         }
 
+        $fullname = $INFO['userinfo']['name'];
+        $username = $INFO['client'];
+        $page     = $INFO['namespace'] . $INFO['id'];
+        $summary  = $SUM;
+        $minor    = (boolean) $_REQUEST['minor'];
+
+        $token = $this->getConf('hipchat_token');
+        $room = $this->getConf('hipchat_room');
+        $from = $this->getConf('hipchat_name');
+
+        $transport = new rcrowe\Hippy\Transport\Guzzle($token, $room, $from);
+        $hippy = new rcrowe\Hippy\Client($transport);
+
         $say = '<b>' . $fullname . '</b> updated the Wikipage <b><a href="' . $this->urlize() . '">' . $INFO['id'] . '</a></b>';
-		if ($minor) $say = $say . ' [minor edit]';
+        if ($minor) $say = $say . ' [minor edit]';
         if ($summary) $say = $say . '<br /><em>' . $summary . '</em>';
-		
-		Hippy::speak($say, array('notify' => $minor));
+
+        $message = new rcrowe\Hippy\Message($minor, rcrowe\Hippy\Message::BACKGROUND_GREEN);
+        $message->setText($say);
+        $hippy->send($message);
     }
 
     /* Make our URLs! */
