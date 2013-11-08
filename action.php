@@ -40,6 +40,7 @@ class action_plugin_hipchat extends DokuWiki_Action_Plugin {
     private function handle() {
        global $SUM;
         global $INFO;
+        global $lang;
 
         /* Namespace filter */
         $ns = $this->getConf('hipchat_namespaces');
@@ -64,12 +65,12 @@ class action_plugin_hipchat extends DokuWiki_Action_Plugin {
         $transport = new rcrowe\Hippy\Transport\Guzzle($token, $room, $from);
         $hippy = new rcrowe\Hippy\Client($transport);
 
-        $say = '<b>' . $fullname . '</b> updated the Wikipage <b><a href="' . $this->urlize() . '">' . $INFO['id'] . '</a></b>';
-        if ($minor) $say = $say . ' [minor edit]';
+        $say = '<b>' . $fullname . '</b> '.$lang['hipchat_update'].'<b><a href="' . $this->urlize() . '">' . $INFO['id'] . '</a></b>';
+        if ($minor) $say = $say . ' ['.$lang['hipchat_minor'].']';
         if ($summary) $say = $say . '<br /><em>' . $summary . '</em>';
 
-        $message = new rcrowe\Hippy\Message($minor, rcrowe\Hippy\Message::BACKGROUND_GREEN);
-        $message->setText($say);
+        $message = new rcrowe\Hippy\Message(!$minor, rcrowe\Hippy\Message::BACKGROUND_GREEN);
+        $message->setHtml($say);
         $hippy->send($message);
     }
 
