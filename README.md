@@ -14,11 +14,10 @@ $ git clone https://github.com/jaguardesign/dokuwiki-hipchat.git hipchat
 2. To fetch the required dependencies, run:
 
 ```
-$ git submodule init
-$ git submodule update
+$ composer install
 ```
 
-3. In your DokuWiki Configuration Settings, enter an API token, room name (or ID number), and the name you want the notifications to appear from in HipChat. 
+3. In your DokuWiki Configuration Settings, enter an API token, room name (or ID number), and the name you want the notifications to appear from in HipChat.
 
 4. Optionally, you can also define a comma-separated list of first-level namespaces to limit notifications to only those namespaces (without this setting, all namespaces will trigger notifications)
 
