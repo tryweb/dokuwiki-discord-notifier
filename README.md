@@ -8,7 +8,7 @@ Setup
 1. Clone repository into your DokuWiku plugins folder, making the target folder name 'hipchat'
 
 ```
-$ git clone https://github.com/jaguardesign/dokuwiki-hipchat.git hipchat
+$ git clone https://github.com/jaguardesignstudio/dokuwiki-hipchat.git hipchat
 ```
 
 2. To fetch the required dependencies, run:
