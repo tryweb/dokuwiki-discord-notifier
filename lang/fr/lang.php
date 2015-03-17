@@ -1,4 +1,4 @@
 <?php
 
-$lang['hipchat_update']     = " a mis à jour la page ";
-$lang['hipchat_minor']      = "modification mineure";
+$lang['slackhq_update']     = " a mis à jour la page ";
+$lang['slackhq_minor']      = "modification mineure";
