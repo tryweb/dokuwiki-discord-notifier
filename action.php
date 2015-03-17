@@ -1,6 +1,6 @@
 <?php
 /**
- * DokuWiki Plugin HipChat (Action Component)
+ * DokuWiki Plugin Slack Integration (Action Component)
  *
  * @license GPL 2 http://www.gnu.org/licenses/gpl-2.0.html
  * @author  Jeremy Ebler <jebler@gmail.com> 2011-09-29
@@ -8,8 +8,7 @@
  * DokuWiki log: https://github.com/cosmocode/log.git
  * @author  Adrian Lang <lang@cosmocode.de> 2010-03-28
  *
- * Hippy: https://github.com/rcrowe/Hippy.git
- * @author Rob Crowe <rcrowe@github>
+
  */
 
 // must be run within Dokuwiki
@@ -21,7 +20,7 @@ if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 
 require 'vendor/autoload.php';
 
-class action_plugin_hipchat extends DokuWiki_Action_Plugin {
+class action_plugin_slackhq extends DokuWiki_Action_Plugin {
 
     function register(&$controller) {
        $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'handle_action_act_preprocess');
@@ -42,7 +41,7 @@ class action_plugin_hipchat extends DokuWiki_Action_Plugin {
         global $INFO;
 
         /* Namespace filter */
-        $ns = $this->getConf('hipchat_namespaces');
+        $ns = $this->getConf('slackhq_namespaces');
         if (!empty($ns)) {
             $namespaces = explode(',', $ns);
             $current_namespace = explode(':', $INFO['namespace']);
@@ -57,20 +56,26 @@ class action_plugin_hipchat extends DokuWiki_Action_Plugin {
         $summary  = $SUM;
         $minor    = (boolean) $_REQUEST['minor'];
 
-        $token = $this->getConf('hipchat_token');
-        $room = $this->getConf('hipchat_room');
-        $from = $this->getConf('hipchat_name');
+        $token = $this->getConf('slackhq_token');
+        $team = $this->getConf('slackhq_team');
+        $channel = $this->getConf('slackhq_room');
+        $from = $this->getConf('slackhq_name');
 
-        $transport = new rcrowe\Hippy\Transport\Guzzle($token, $room, $from);
-        $hippy = new rcrowe\Hippy\Client($transport);
+        $client = new Slack\Client($team , $token);
+        $slack = new Slack\Notifier($client);
 
-        $say = '<b>' . $fullname . '</b> '.$this->getLang('hipchat_update').'<b><a href="' . $this->urlize() . '">' . $INFO['id'] . '</a></b>';
-        if ($minor) $say = $say . ' ['.$this->getLang('hipchat_minor').']';
+       
+
+        $say = '<b>' . $fullname . '</b> '.$this->getLang('slackhq_update').'<b><a href="' . $this->urlize() . '">' . $INFO['id'] . '</a></b>';
+        if ($minor) $say = $say . ' ['.$this->getLang('slackhq_minor').']';
         if ($summary) $say = $say . '<br /><em>' . $summary . '</em>';
+        
+        $message = new Slack\Message\Message('Hello world');
+        
+        $message->setChannel($channel)->setIconEmoji(':ghost:')->setUsername($from);
 
-        $message = new rcrowe\Hippy\Message(!$minor, rcrowe\Hippy\Message::BACKGROUND_GREEN);
-        $message->setHtml($say);
-        $hippy->send($message);
+        $slack->notify($message);
+
     }
 
     /* Make our URLs! */
