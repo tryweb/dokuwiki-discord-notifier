@@ -58,7 +58,7 @@ class action_plugin_slackhq extends DokuWiki_Action_Plugin {
 
         $token = $this->getConf('slackhq_token');
         $team = $this->getConf('slackhq_team');
-        $channel = $this->getConf('slackhq_room');
+        $channel = $this->getConf('slackhq_channel');
         $from = $this->getConf('slackhq_name');
 
         $client = new Slack\Client($team , $token);
@@ -70,7 +70,7 @@ class action_plugin_slackhq extends DokuWiki_Action_Plugin {
         if ($minor) $say = $say . ' ['.$this->getLang('slackhq_minor').']';
         if ($summary) $say = $say . '<br /><em>' . $summary . '</em>';
         
-        $message = new Slack\Message\Message('Hello world');
+        $message = new Slack\Message\Message($say);
         
         $message->setChannel($channel)->setIconEmoji(':ghost:')->setUsername($from);
 
