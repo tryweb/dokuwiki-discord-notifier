@@ -6,6 +6,6 @@
  */
 
   $conf['slackhq_token']    = "<token>";
-  $conf['slackhq_channel']  = "<room-name>";
+  $conf['slackhq_channel']  = "<channel-name>";
   $conf['slackhq_name']     = "Wiki";
   $conf['slackhq_team']     = "Team";
