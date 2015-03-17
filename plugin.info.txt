@@ -1,7 +1,7 @@
-base   hipchat
-author Jaguar Design Studio
-email  itadmin@jaguardesignstudio.com
-date   2011-09-29
-name   HipChat plugin
-desc   Notify a HipChat room on page saves
-url    http://www.github.com/jaguardesign/dokuwiki-hipchat/
+base   slackhq
+author Eevol 
+email  thierry@eevol.lu
+date   2015-03-12
+name   Slack Integration plugin
+desc   Notify a Slack channel on page saves
+url    http://www.github.com/littleiffel/dokuwiki-slack-integration/
