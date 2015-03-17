@@ -5,6 +5,6 @@
  * @author Jeremy Ebler <jebler@gmail.com>
  */
 
-  $conf['hipchat_token'] = "<token>";
-  $conf['hipchat_room']  = "<room-name>";
-  $conf['hipchat_name']  = "Wiki";
+  $conf['slackhq_token']    = "<token>";
+  $conf['slackhq_channel']  = "<room-name>";
+  $conf['slackhq_name']     = "Wiki";
