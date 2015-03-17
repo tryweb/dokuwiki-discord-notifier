@@ -5,7 +5,8 @@
  * @author Brendon Rapp <brendon@jaguardesignstudio.com>
  */
 
-  $meta['hipchat_token']      = array('string');
-  $meta['hipchat_room']       = array('string');
-  $meta['hipchat_name']       = array('string');
-  $meta['hipchat_namespaces'] = array('string');
+  $meta['slackhq_token']      = array('string');
+  $meta['slackhq_room']       = array('string');
+  $meta['slackhq_name']       = array('string');
+  $meta['slackhq_namespaces'] = array('string');
+  $meta['slackhq_team']       = array('string');
