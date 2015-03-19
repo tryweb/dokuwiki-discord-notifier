@@ -5,7 +5,7 @@
  * @author Jeremy Ebler <jebler@gmail.com>
  */
 
-  $conf['slackhq_token']    = "<token>";
+  $conf['slackhq_icon']    = ":ghost:";
   $conf['slackhq_channel']  = "<channel-name>";
-  $conf['slackhq_name']     = "Wiki";
-  $conf['slackhq_team']     = "Team";
+  $conf['slackhq_name']     = "DokuWiki";
+  $conf['slackhq_webhook']  = "https://hooks.slack.com/services/bla/bla/bla";

@@ -56,25 +56,41 @@ class action_plugin_slackhq extends DokuWiki_Action_Plugin {
         $summary  = $SUM;
         $minor    = (boolean) $_REQUEST['minor'];
 
-        $token = $this->getConf('slackhq_token');
-        $team = $this->getConf('slackhq_team');
+ 
+        $icon = $this->getConf('slackhq_icon');
         $channel = $this->getConf('slackhq_channel');
         $from = $this->getConf('slackhq_name');
 
-        $client = new Slack\Client($team , $token);
-        $slack = new Slack\Notifier($client);
+        $webhook = $this->getConf('slackhq_webhook');
 
-       
 
-        $say = '<b>' . $fullname . '</b> '.$this->getLang('slackhq_update').'<b><a href="' . $this->urlize() . '">' . $INFO['id'] . '</a></b>';
-        if ($minor) $say = $say . ' ['.$this->getLang('slackhq_minor').']';
-        if ($summary) $say = $say . '<br /><em>' . $summary . '</em>';
-        
-        $message = new Slack\Message\Message($say);
-        
-        $message->setChannel($channel)->setIconEmoji(':ghost:')->setUsername($from);
+        $say = '' . $fullname . ' updated the WikiPage <'. $this->urlize() . '|' . $INFO['id'] . '>';
+        //if ($minor) $say = $say . ' ['.$this->getLang('slackhq_minor').']';
+        //if ($summary) $say = $say . ' / ' . $summary . '';
 
-        $slack->notify($message);
+
+        $data = "payload=" . json_encode(array(
+                "channel"       =>  "#{$channel}",
+                "text"          =>  $say,
+                "username"      => $from,
+                "icon_emoji"    =>  $icon,
+                "attachments"  =>  array(array(
+                    "fallback" => 'Change summary',
+                    "color"    => '#333',
+                    "title"    => $INFO['id'],
+                    "title_link"=> $this->urlize(),
+                    "text"     => $summary,
+                    "author"   => $fullname
+                    ))
+            ));
+    
+        // You can get your webhook endpoint from your Slack settings
+        $ch = curl_init($webhook);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $result = curl_exec($ch);
+        curl_close($ch);
 
     }
 
