@@ -37,8 +37,9 @@ class action_plugin_slackhq extends DokuWiki_Action_Plugin {
     }
 
     private function handle() {
-       global $SUM;
+		global $SUM;
         global $INFO;
+		global $conf;
 
         /* Namespace filter */
         $ns = $this->getConf('slackhq_namespaces');
@@ -83,15 +84,42 @@ class action_plugin_slackhq extends DokuWiki_Action_Plugin {
                     "author"   => $fullname
                     ))
             ));
+			
+		$ch = curl_init($webhook);
+			
+		$proxy = $conf['proxy'];
+		
+		// If DokuWiki is set up with proxy settings then use them in our cURL request
+		if (!empty($proxy)) {
+			// Configure the proxy address and port
+			$proxyAddress = $proxy['host'] . ':' . $proxy['port'];
+			
+			curl_setopt($ch, CURLOPT_PROXY, $proxyAddress);
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+			// TODO: This may be required internally but best to add a config flag/path to local certificate file
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			
+			// Only include a username and password if we actually have one
+			if (!empty($proxy['user']) && !empty($proxy['pass'])) {
+				$proxyAuth = $proxy['user'] . ':' . conf_decodeString($proxy['port']);
+				
+				curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxyAuth);
+			}
+			
+		}
     
         // You can get your webhook endpoint from your Slack settings
-        $ch = curl_init($webhook);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $result = curl_exec($ch);
+		
+		// This should ideally display or log only for Admin users/in debugging mode
+		if ($result === false){
+			echo 'cURL error when posting Wiki save notification to Slack: ' . curl_error($ch);
+		}
+		
         curl_close($ch);
-
     }
 
     /* Make our URLs! */
