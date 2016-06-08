@@ -8,7 +8,7 @@ Install
 Clone the repository into your DokuWiku plugins folder:
 
 ```
-$ git clone https://github.com/littleiffel/dokuwiki-slack-integration.git /var/lib/dokuwiki/lib/plugins/slackhq
+$ git clone https://github.com/mallchin/dokuwiki-slack-notifier.git /var/lib/dokuwiki/lib/plugins/slackhq
 ```
 
 Configure
