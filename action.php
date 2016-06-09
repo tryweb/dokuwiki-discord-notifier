@@ -56,30 +56,12 @@ class action_plugin_slacknotifier extends DokuWiki_Action_Plugin {
 			$title .= " (<{$this->urlize($revArr[0])}|Compare changes>)";
 		}
 
-		/*
-		// attachement
-		$summary  = $SUM;
-
-                // payload
-                $data = array(
-                        "text"                  =>  $title,
-                        "attachments"           =>  array(array(
-                                "fallback"      => 'Change summary',
-                                "color"         => '#333',
-                                "title"         => $INFO['id'],
-                                "title_link"    => $this->urlize(),
-                                "text"          => $summary,
-                                "author"        => $fullname
-                        ))
-                );
-		*/
-
-		// title
+		// text
                 $data = array(
                         "text"                  =>  $title
                 );
 
-		// summary
+		// attachments
 		if (!empty($SUM)) {
 			$data['attachments'] = array(array(
                                 "fallback"      => "Change summary",
@@ -114,17 +96,19 @@ class action_plugin_slacknotifier extends DokuWiki_Action_Plugin {
 			}
 
 		}
-    
+
+		// submit payload
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
 		curl_setopt($ch, CURLOPT_POSTFIELDS, array('payload' => $json));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		$result = curl_exec($ch);
-		
+
 		// ideally display only for Admin users and/or in debugging mode
 		if ($result === false){
 			echo 'cURL error when posting Wiki save notification to Slack: ' . curl_error($ch);
 		}
-		
+
+		// close curl		
 		curl_close($ch);
 
 	}
