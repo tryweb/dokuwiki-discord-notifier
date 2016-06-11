@@ -1,7 +1,7 @@
 base   slacknotifier
-author Eevol
-email  thierry@eevol.lu
-date   2016-06-09
+author mallchin
+email  mallchin@outlook.com
+date   2016-06-11
 name   Slack Notifier
-desc   Notify via Slack when articles are updated
-url    http://www.github.com/littleiffel/dokuwiki-slack-integration/
+desc   Notify page events via Slack
+url    https://www.github.com/mallchin/dokuwiki-slack-notifier/
