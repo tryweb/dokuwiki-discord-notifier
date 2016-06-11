@@ -6,9 +6,10 @@
  *
  */
 
+
 if (!defined('DOKU_INC')) die();
 
-require_once (DOKU_INC.'inc/changelog.php');
+//require_once (DOKU_INC.'inc/changelog.php');
 
 if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
 if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
@@ -16,141 +17,194 @@ if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 
 class action_plugin_slacknotifier extends DokuWiki_Action_Plugin {
 
-	function register(Doku_Event_Handler $controller) {
-		$controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'handle_action_act_preprocess');
-	}
+        var $_event = null;
+        var $_payload = null;
 
-	function handle_action_act_preprocess(Doku_Event $event, $param) {
-		if (isset($event->data['save'])) {
-			$this->handle();
-		}
-		return;
-	}
+        function register(Doku_Event_Handler $controller) {
+                $controller->register_hook('IO_WIKIPAGE_WRITE', 'AFTER', $this, '_handle');
+        }
 
-	private function handle() {
+        function _handle(Doku_Event $event, $param) {
 
-		global $conf;
-		global $ID;
-		global $INFO;
-		global $SUM;
+                // filter writes to attic
+                if ($this->_attic_write($event)) return;
 
-		// filter by namespaces
-		$ns = $this->getConf('namespaces');
-		if (!empty($ns)) {
-			$namespaces = explode(',', $ns);
-			$current_namespace = explode(':', $INFO['namespace']);
-			if (!in_array($current_namespace[0], $namespaces)) {
-				return;
-			}
-		}
+                // filter namespace
+                if (!$this->_valid_namespace()) return;
 
-		// title
-		$fullname = $INFO['userinfo']['name'];
-		$page     = $INFO['namespace'] . $INFO['id'];
-		$title    = "{$fullname} updated page <{$this->urlize()}|{$INFO['id']}>";
+                // filer event
+                if (!$this->_set_event($event)) return;
 
-		// compare changes
-		$changelog = new PageChangeLog($ID);
-		$revArr = $changelog->getRevisions(-1, 1);
-		if (count($revArr) == 1) {
-			$title .= " (<{$this->urlize($revArr[0])}|Compare changes>)";
-		}
+                // set payload text
+                $this->_set_payload_text();
 
-		// text
-                $data = array(
-                        "text"                  =>  $title
-                );
+                // set payload attachments
+                $this->_set_payload_attachments();
 
-		// attachments
-		if (!empty($SUM)) {
-			$data['attachments'] = array(array(
+                // submit payload
+                $this->_submit_payload();
+
+        }
+
+        private function _attic_write($event) {
+                $filename = $event->data[0][0];
+                if (strpos($filename, 'data/attic') !== false) return true;
+        }
+
+        private function _valid_namespace() {
+                global $INFO;
+                $validNamespaces = $this->getConf('namespaces');
+                if (!empty($validNamespaces)) {
+                        $validNamespacesArr = explode(',', $validNamespaces);
+                        $thisNamespaceArr = explode(':', $INFO['namespace']);
+                        return in_array($thisNamespaceArr[0], $validNamespacesArr);
+                } else {
+                        return true;
+                }
+        }
+
+        private function _set_event($event) {
+                global $ID;
+                global $INFO;
+                $data = $event->data;
+                $contents = $data[0][1];
+                $newRev = $data[3];
+                $oldRev = $INFO['meta']['last_change']['date'];
+                if (!empty($contents) && empty($newRev) && empty($oldRev) && $this->getConf('notify_create') == 1) {
+                        $this->_event = 'create';
+                        return true;
+                } elseif (!empty($contents) && empty($newRev) && !empty($oldRev) && $this->getConf('notify_edit') == 1) {
+                        $this->_event = 'edit';
+                        return true;
+                } elseif (empty($contents) && empty($newRev) && $this->getConf('notify_delete') == 1) {
+                        $this->_event = 'delete';
+                        return true;
+                } else {
+                        return false;
+                }
+        }
+
+        private function _set_payload_text() {
+                global $ID;
+                global $INFO;
+                switch ($this->_event) {
+                        case 'create':
+                                $event = "created";
+                                break;
+                        case 'edit':
+                                $event = "updated";
+                                break;
+                        case 'delete':
+                                $event = "removed";
+                                break;
+                }
+                $user = $INFO['userinfo']['name'];
+                $link = $this->_get_url();
+                $page = $INFO['id'];
+                $title = "{$user} {$event} page <{$link}|{$page}>";
+                /* Searching changelogs yields previous revisions for
+                 * created pages that had been deleted, however we'll
+                 * use last_change which ignores these (so we won't
+                 * show changes for created pages even if a previous
+                 * revision exists)
+                 */
+                /*
+                $changelog = new PageChangeLog($ID);
+                $revArr = $changelog->getRevisions(0, 1);
+                $oldRev = (count($revArr) == 1) ? $revArr[0] : null;
+                */
+                if ($this->_event != 'delete') {
+                        $oldRev = $INFO['meta']['last_change']['date'];
+                        if (!empty($oldRev)) {
+                                $diffURL = $this->_get_url($oldRev);
+                                $title .= " (<{$diffURL}|Compare changes>)";
+                        }
+                }
+                $this->_payload = array("text" => $title);
+        }
+
+        private function _set_payload_attachments() {
+                global $INFO;
+                global $SUM;
+                $user = $INFO['userinfo']['name'];
+                if ($this->getConf('show_summary') == 1 && !empty($SUM)) {
+                        $this->_payload['attachments'] = array(array(
                                 "fallback"      => "Change summary",
-				"title"		=> "Summary",
-                                "text"          => "{$SUM}\n- {$fullname}"
-			));
-		}
+                                "title"         => "Summary",
+                                "text"          => "{$SUM}\n- {$user}"
+                        ));
+                }
+        }
 
-		// encode data
-		$json = json_encode($data);
+        private function _get_url($oldRev=null) {
+                global $conf;
+                global $INFO;
+                $page = $INFO['id'];
+                if (($conf['userewrite'] == 1 || $conf['userewrite'] == 2) && $conf['useslash'] == true) {
+                        return str_replace(":", "/", $page);
+                }
+                switch($conf['userewrite']) {
+                        case 0:
+                                $url = DOKU_URL . "doku.php?id={$page}";
+                                break;
+                        case 1:
+                                $url = DOKU_URL . $page;
+                                break;
+                        case 2:
+                                $url = DOKU_URL . "doku.php/{$page}";
+                                break;
+                }
+                if (!empty($oldRev)) {
+                        switch($conf['userewrite']) {
+                                case 0:
+                                        $url .= "&do=diff&rev={$oldRev}";
+                                        break;
+                                case 1:
+                                case 2:
+                                        $url .= "?do=diff&rev={$oldRev}";
+                                        break;
+                        }
+                }
+                return $url;
+        }
 
-		// init curl
-		$webhook = $this->getConf('webhook');
-		$ch = curl_init($webhook);
+        private function _submit_payload() {
+                global $conf;
 
-		// use proxy if defined
-		$proxy = $conf['proxy'];		
-		if (!empty($proxy['host'])) {
+                // encode payload
+                $json = json_encode($this->_payload);
 
-			// configure proxy address and port
-			$proxyAddress = $proxy['host'] . ':' . $proxy['port'];
+                // init curl
+                $webhook = $this->getConf('webhook');
+                $ch = curl_init($webhook);
 
-			curl_setopt($ch, CURLOPT_PROXY, $proxyAddress);
-			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-			// TODO: may be required internally but best to add a config flag/path to local certificate file
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		
-			// include username and password if defined
-			if (!empty($proxy['user']) && !empty($proxy['pass'])) {
-				$proxyAuth = $proxy['user'] . ':' . conf_decodeString($proxy['port']);
-				curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxyAuth);
-			}
+                // use proxy if defined
+                $proxy = $conf['proxy'];
+                if (!empty($proxy['host'])) {
 
-		}
+                        // configure proxy address and port
+                        $proxyAddress = $proxy['host'] . ':' . $proxy['port'];
+                        curl_setopt($ch, CURLOPT_PROXY, $proxyAddress);
+                        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
-		// submit payload
-		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-		curl_setopt($ch, CURLOPT_POSTFIELDS, array('payload' => $json));
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		$result = curl_exec($ch);
+                        // include username and password if defined
+                        if (!empty($proxy['user']) && !empty($proxy['pass'])) {
+                                $proxyAuth = $proxy['user'] . ':' . conf_decodeString($proxy['port']);
+                                curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxyAuth);
+                        }
 
-		// ideally display only for Admin users and/or in debugging mode
-		if ($result === false){
-			echo 'cURL error when posting Wiki save notification to Slack: ' . curl_error($ch);
-		}
+                }
 
-		// close curl		
-		curl_close($ch);
+                // submit payload
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+                curl_setopt($ch, CURLOPT_POSTFIELDS, array('payload' => $json));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                $result = curl_exec($ch);
 
-	}
+                // close curl
+                Curl_close($ch);
 
-	private function urlize($diffRev=null) {
+        }
 
-		global $conf;
-		global $INFO;
-
-		switch($conf['userewrite']) {
-			case 0:
-				if (!empty($diffRev)) {
-                        		$url = DOKU_URL . "doku.php?id={$INFO['id']}&rev={$diffRev}&do=diff";
-                		} else {
-                        		$url = DOKU_URL . "doku.php?id={$INFO['id']}";
-                		}
-				break;
-			case 1:
-				$id = $INFO['id'];
-				if ($conf['useslash']) {
-					$id = str_replace(":", "/", $id);
-				}
-				if (!empty($diffRev)) {
-                        		$url = DOKU_URL . "{$id}?rev={$diffRev}&do=diff";
-                		} else {
-                        		$url = DOKU_URL . $id;
-                		}
-				break;
-			case 2:
-				$id = $INFO['id'];
-				if ($conf['useslash']) {
-					$id = str_replace(":", "/", $id);
-				}
-				if (!empty($diffRev)) {
-                        		$url = DOKU_URL . "doku.php/{$id}?rev={$diffRev}&do=diff";
-                		} else {
-                        		$url = DOKU_URL . "doku.php/{$id}";
-                		}	
-				break;
-		}
-		return $url;
-	}
 }
-
-// vim:ts=4:sw=4:et:enc=utf-8:
