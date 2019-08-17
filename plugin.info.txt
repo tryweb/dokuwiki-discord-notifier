@@ -1,7 +1,7 @@
 base   discordnotifier
-author mallchin
-email  mallchin@outlook.com
-date   2016-06-11
+author zTeeed
+email  aurelien@duboc.xyz
+date   2019-08-17
 name   Discord Notifier
 desc   Notify page events via Discord
-url    https://www.github.com/mallchin/dokuwiki-slack-notifier/
+url    https://www.github.com/zteeed/dokuwiki-discord-notifier/
