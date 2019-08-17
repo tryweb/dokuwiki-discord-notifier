@@ -41,9 +41,6 @@ class action_plugin_discordnotifier extends DokuWiki_Action_Plugin
         // set payload text
         $this->_set_payload_text();
 
-        // set payload attachments
-        $this->_set_payload_attachments();
-
         // submit payload
         $this->_submit_payload();
 
@@ -92,56 +89,43 @@ class action_plugin_discordnotifier extends DokuWiki_Action_Plugin
 
     private function _set_payload_text()
     {
-        global $ID;
         global $INFO;
+
+        $embed_color = hexdec("37474f"); // default value
         switch ($this->_event) {
             case 'create':
                 $event = "created";
+                $embed_color = hexdec("00cc00");
                 break;
             case 'edit':
                 $event = "updated";
+                $embed_color = hexdec("00cccc");
                 break;
             case 'delete':
                 $event = "removed";
+                $embed_color = hexdec("cc0000");
                 break;
         }
         $user = $INFO['userinfo']['name'];
         $link = $this->_get_url();
         $page = $INFO['id'];
-        $title = "{$user} {$event} page <{$link}|{$page}>";
-        /* Searching changelogs yields previous revisions for
-         * created pages that had been deleted, however we'll
-         * use last_change which ignores these (so we won't
-         * show changes for created pages even if a previous
-         * revision exists)
-         */
-        /*
-        $changelog = new PageChangeLog($ID);
-        $revArr = $changelog->getRevisions(0, 1);
-        $oldRev = (count($revArr) == 1) ? $revArr[0] : null;
-        */
+        $description = "{$user} {$event} page [__{$page}__]({$link})";
+
         if ($this->_event != 'delete') {
             $oldRev = $INFO['meta']['last_change']['date'];
             if (!empty($oldRev)) {
                 $diffURL = $this->_get_url($oldRev);
-                $title .= " (<{$diffURL}|Compare changes>)";
+                $description .= " \([Compare changes]({$diffURL})\)";
             }
         }
-        $this->_payload = array("text" => $title);
-    }
-
-    private function _set_payload_attachments()
-    {
-        global $INFO;
-        global $SUM;
-        $user = $INFO['userinfo']['name'];
-        if ($this->getConf('show_summary') == 1 && !empty($SUM)) {
-            $this->_payload['attachments'] = array(array(
-                "fallback" => "Change summary",
-                "title" => "Summary",
-                "text" => "{$SUM}\n- {$user}"
-            ));
-        }
+        $title = "New event";
+        $footer = array("text" => "Dokuwiki discordnotifier v1.0.0");
+        $payload = array("embeds" =>
+            array(
+                ["title" => $title, "color" => $embed_color, "description" => $description, "footer" => $footer]
+            ),
+        );
+        $this->_payload = $payload;
     }
 
     private function _get_url($oldRev = null)
@@ -181,12 +165,8 @@ class action_plugin_discordnotifier extends DokuWiki_Action_Plugin
     {
         global $conf;
 
-        // encode payload
-        $json = json_encode($this->_payload);
-
         // init curl
-        $webhook = $this->getConf('webhook');
-        $ch = curl_init($webhook);
+        $ch = curl_init($this->getConf('webhook'));
 
         // use proxy if defined
         $proxy = $conf['proxy'];
@@ -208,9 +188,9 @@ class action_plugin_discordnotifier extends DokuWiki_Action_Plugin
 
         // submit payload
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($ch, CURLOPT_POSTFIELDS, array('payload' => $json));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($this->_payload));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $result = curl_exec($ch);
+        curl_exec($ch);
 
         // close curl
         Curl_close($ch);
