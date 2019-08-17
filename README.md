@@ -1,6 +1,6 @@
-# DokuWiki Slack Notifier
+# DokuWiki Discord Notifier
 
-A DokuWiki plugin that notifies a Slack channel room of wiki edits.
+A DokuWiki plugin that notifies a Discord channel room of wiki edits.
 
 ![Example notification](https://github.com/mallchin/dokuwiki-slack-notifier/raw/master/example.png)
 
@@ -10,6 +10,6 @@ Download the latest [Release](https://github.com/mallchin/dokuwiki-slack-notifie
 
 ## Configure
 
-1. Create an Incoming Webhook on slack
+1. Create an Incoming Webhook on discord
 
-2. Enter the webhook into the slacknotifier configuration section in DokuWiki's Configuration Settings
+2. Enter the webhook into the discordnotifier configuration section in DokuWiki's Configuration Settings

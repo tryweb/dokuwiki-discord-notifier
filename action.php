@@ -1,6 +1,6 @@
 <?php
 /**
- * DokuWiki Plugin Slack Notifier (Action Component)
+ * DokuWiki Plugin Discord Notifier (Action Component)
  *
  * @license GPL 2 http://www.gnu.org/licenses/gpl-2.0.html
  *
@@ -15,7 +15,7 @@ if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
 if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
 if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC . 'lib/plugins/');
 
-class action_plugin_slacknotifier extends DokuWiki_Action_Plugin
+class action_plugin_discordnotifier extends DokuWiki_Action_Plugin
 {
 
     var $_event = null;
