@@ -2,7 +2,9 @@
 
 A DokuWiki plugin that notifies a Discord channel room of wiki edits.
 
-![Example notification](https://github.com/zteeed/dokuwiki-discord-notifier/raw/master/example.png)
+![Example created notification](https://github.com/zteeed/dokuwiki-discord-notifier/raw/master/images/event_created.png)
+![Example updated notification](https://github.com/zteeed/dokuwiki-discord-notifier/raw/master/images/event_updated.png)
+![Example removed notification](https://github.com/zteeed/dokuwiki-discord-notifier/raw/master/images/event_deleted.png)
 
 ## Install
 
