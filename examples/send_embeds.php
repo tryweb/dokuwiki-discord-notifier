@@ -6,13 +6,13 @@
 $conf = array();
 include "../conf/default.php";
 
-function send_embeds($webhook)
+function send_embeds($webhook, $version)
 {
     $title = "This is a title.";
     $color = hexdec("00cccc");
     $url = "https://github.com/zteeed/dokuwiki-discord-notifier";
     $description = "*Hi!* **Wow!** I can __use__ hyperlinks and star this project [here]($url).";
-    $footer = array("text" => "Dokuwiki discordnotifier v1.0.0");
+    $footer = array("text" => "Dokuwiki discordnotifier $version");
 
     // format POST data
     $payload = array("embeds" =>
@@ -34,4 +34,5 @@ function send_embeds($webhook)
 }
 
 $webhook = $conf['webhook'];
-send_embeds($webhook);
+$version = $conf['notify_version'];
+send_embeds($webhook, $version);

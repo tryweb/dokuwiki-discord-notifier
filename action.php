@@ -120,6 +120,7 @@ class action_plugin_discordnotifier extends DokuWiki_Action_Plugin
         }
         $title = "New event";
         $footer = array("text" => "Dokuwiki discordnotifier v1.0.0");
+        $footer = array("text" => "Dokuwiki discordnotifier " . $conf["notify_version"]);
         $payload = array("embeds" =>
             array(
                 ["title" => $title, "color" => $embed_color, "description" => $description, "footer" => $footer]
