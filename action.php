@@ -17,18 +17,24 @@ if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC . 'lib/plugins/');
 
 class action_plugin_discordnotifier extends DokuWiki_Action_Plugin
 {
-
     var $_event = null;
+    var $_event_type = array(
+        "E" => "edit",
+        "e" => "edit minor",
+        "C" => "create",
+        "D" => "delete",
+        "R" => "revert"
+    );
+    var $_summary = null;
     var $_payload = null;
 
     function register(Doku_Event_Handler $controller)
     {
-        $controller->register_hook('IO_WIKIPAGE_WRITE', 'AFTER', $this, '_handle');
+        $controller->register_hook('COMMON_WIKIPAGE_SAVE', 'AFTER', $this, '_handle');
     }
 
     function _handle(Doku_Event $event, $param)
     {
-
         // filter writes to attic
         if ($this->_attic_write($event)) return;
 
@@ -39,16 +45,15 @@ class action_plugin_discordnotifier extends DokuWiki_Action_Plugin
         if (!$this->_set_event($event)) return;
 
         // set payload text
-        $this->_set_payload_text();
+        $this->_set_payload_text($event);
 
         // submit payload
         $this->_submit_payload();
-
     }
 
     private function _attic_write($event)
     {
-        $filename = $event->data[0][0];
+        $filename = $event->data['file'];
         if (strpos($filename, 'data/attic') !== false) return true;
     }
 
@@ -67,19 +72,23 @@ class action_plugin_discordnotifier extends DokuWiki_Action_Plugin
 
     private function _set_event($event)
     {
-        global $ID;
-        global $INFO;
-        $data = $event->data;
-        $contents = $data[0][1];
-        $newRev = $data[3];
-        $oldRev = $INFO['meta']['last_change']['date'];
-        if (!empty($contents) && empty($newRev) && empty($oldRev) && $this->getConf('notify_create') == 1) {
+        $this->_opt = print_r($event, true);
+        $changeType = $event->data['changeType'];
+        $event_type = $this->_event_type[$changeType];
+        $summary = $event->data['summary'];
+        if (!empty($summary)) {
+            $this->_summary = $summary;
+        }
+        if ($event_type == 'create' && $this->getConf('notify_create') == 1) {
             $this->_event = 'create';
             return true;
-        } elseif (!empty($contents) && empty($newRev) && !empty($oldRev) && $this->getConf('notify_edit') == 1) {
+        } elseif ($event_type == 'edit' && $this->getConf('notify_edit') == 1) {
             $this->_event = 'edit';
             return true;
-        } elseif (empty($contents) && empty($newRev) && $this->getConf('notify_delete') == 1) {
+        } elseif ($event_type == 'edit minor' && ($this->getConf('notify_edit') == 1) && ($this->getConf('notify_edit_minor') == 1)) {
+            $this->_event = 'edit minor';
+            return true;
+        } elseif ($event_type == 'delete' && $this->getConf('notify_delete') == 1) {
             $this->_event = 'delete';
             return true;
         } else {
@@ -87,39 +96,55 @@ class action_plugin_discordnotifier extends DokuWiki_Action_Plugin
         }
     }
 
-    private function _set_payload_text()
+    private function _set_payload_text($event)
     {
+        global $conf;
         global $INFO;
-
+        $event_name = '';
         $embed_color = hexdec("37474f"); // default value
         switch ($this->_event) {
             case 'create':
-                $event = "created";
+                $event_name = 'created';
                 $embed_color = hexdec("00cc00");
                 break;
             case 'edit':
-                $event = "updated";
+                $event_name = 'updated';
+                $embed_color = hexdec("00cccc");
+                break;
+            case 'edit minor':
+                $event_name = 'minor updated';
                 $embed_color = hexdec("00cccc");
                 break;
             case 'delete':
-                $event = "removed";
+                $event_name = 'removed';
                 $embed_color = hexdec("cc0000");
                 break;
         }
+
         $user = $INFO['userinfo']['name'];
-        $link = $this->_get_url();
-        $page = $INFO['id'];
-        $description = "{$user} {$event} page [__{$page}__]({$link})";
+        $link = $this->_get_url($event);
+        $page = $event->data['id'];
+        $description = "{$user} {$event_name} page [__{$page}__]({$link})";
 
         if ($this->_event != 'delete') {
             $oldRev = $INFO['meta']['last_change']['date'];
             if (!empty($oldRev)) {
-                $diffURL = $this->_get_url($oldRev);
+                $diffURL = $this->_get_url($event);
                 $description .= " \([Compare changes]({$diffURL})\)";
             }
         }
-        $title = "New event";
-        $footer = array("text" => "Dokuwiki discordnotifier v1.0.0");
+
+        $summary = $this->_summary;
+        if ((strpos($event_name, 'updated') !== false) && $this->getConf('notify_show_summary')) {
+            if ($summary) {
+                $description .= "\nSummary: $summary";
+            } else {
+                $description .= "\nSummary is empty";
+            }
+        }
+
+        $title = "New {$event_name} event";
+        $footer = array("text" => "Dokuwiki discordnotifier " . $conf["notify_version"]);
         $payload = array("embeds" =>
             array(
                 ["title" => $title, "color" => $embed_color, "description" => $description, "footer" => $footer]
@@ -128,11 +153,11 @@ class action_plugin_discordnotifier extends DokuWiki_Action_Plugin
         $this->_payload = $payload;
     }
 
-    private function _get_url($oldRev = null)
+    private function _get_url($event = null)
     {
         global $conf;
-        global $INFO;
-        $page = $INFO['id'];
+        $oldRev = $event->data['oldRevision'];
+        $page = $event->data['id'];
         if (($conf['userewrite'] == 1 || $conf['userewrite'] == 2) && $conf['useslash'] == true) {
             return str_replace(":", "/", $page);
         }
