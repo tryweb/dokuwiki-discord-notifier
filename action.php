@@ -25,6 +25,7 @@ class action_plugin_discordnotifier extends DokuWiki_Action_Plugin
         "D" => "delete",
         "R" => "revert"
     );
+    var $_summary = null;
     var $_payload = null;
 
     function register(Doku_Event_Handler $controller)
@@ -74,6 +75,10 @@ class action_plugin_discordnotifier extends DokuWiki_Action_Plugin
         $this->_opt = print_r($event, true);
         $changeType = $event->data['changeType'];
         $event_type = $this->_event_type[$changeType];
+        $summary = $event->data['summary'];
+        if (!empty($summary)) {
+            $this->_summary = $summary;
+        }
         if ($event_type == 'create' && $this->getConf('notify_create') == 1) {
             $this->_event = 'create';
             return true;
@@ -126,6 +131,15 @@ class action_plugin_discordnotifier extends DokuWiki_Action_Plugin
             if (!empty($oldRev)) {
                 $diffURL = $this->_get_url($event);
                 $description .= " \([Compare changes]({$diffURL})\)";
+            }
+        }
+
+        $summary = $this->_summary;
+        if ((strpos($event_name, 'updated') !== false) && $this->getConf('notify_show_summary')) {
+            if ($summary) {
+                $description .= "\nSummary: $summary";
+            } else {
+                $description .= "\nSummary is empty";
             }
         }
 
