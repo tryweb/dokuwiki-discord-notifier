@@ -1,5 +1,4 @@
 <?php
-$conf['notify_version'] = 'v1.0.1';
 $conf['namespaces'] = "";
 $conf['notify_create'] = 1;
 $conf['notify_edit'] = 1;
