@@ -1,4 +1,14 @@
 <?php
+
+/**
+ * @license    GPL 2 (http://www.gnu.org/licenses/gpl-2.0.html)
+ * 
+ * @author zteeed <aurelien@duboc.xyz>
+ * @author littleiffel 
+ * @author louisbl <hello@louisbl.fr>
+ * @author Rainbow-Spike <rainbow_spike@derpy.ru>
+ */
+
 $lang['namespaces'] = "Espaces de noms (séparés par des virgules)";
 $lang['notify_create'] = "Notifier lorsque des pages sont créées";
 $lang['notify_edit'] = "Notifier quand les pages sont éditées";

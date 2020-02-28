@@ -1,4 +1,15 @@
 <?php
+
+/**
+ * @license    GPL 2 (http://www.gnu.org/licenses/gpl-2.0.html)
+ * 
+ * @author zteeed <aurelien@duboc.xyz>
+ * @author mallchin
+ * @author littleiffel
+ * @author brendonrapp <brendon@jaguardesignstudio.com>
+ * @author Rainbow-Spike <rainbow_spike@derpy.ru
+ */
+
 $lang['namespaces'] = "Namespaces (comma-separated)";
 $lang['notify_create'] = "Notify when pages are created";
 $lang['notify_edit'] = "Notify when pages are edited";
