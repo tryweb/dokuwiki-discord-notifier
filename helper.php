@@ -20,7 +20,6 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
     }
     
     public function attic_write ( $filename ) {
-        //die ($filename);
         if ( strpos ( $filename, 'data/attic' ) !== false ) {
             return true;
         }
@@ -119,7 +118,6 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
                 ["title" => $title, "color" => $embed_color, "description" => $description, "footer" => $footer]
             ),
         );
-        die(print_r($payload));
         $this -> _payload = $payload;
     }
     
