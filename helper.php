@@ -178,7 +178,7 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
         }
         
         // submit payload
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt ( $ch, CURLOPT_CUSTOMREQUEST, "POST" );
         $json_payload = json_encode ( $this->_payload );
         $payload_length = 'Content-length: ' . mb_strlen ( $json_payload );
         curl_setopt ( $ch, CURLOPT_HTTPHEADER, array ( 'Content-type: application/json', $payload_length ) );
