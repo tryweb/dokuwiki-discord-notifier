@@ -112,7 +112,7 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
             if ( $summary ) $description .= "\n" . $lang['summary'] . ": " . $summary;
         }
         
-        $footer = array ( "text" => "Dokuwiki DiscordNotifier v1.1.0" );
+        $footer = array ( "text" => "Dokuwiki DiscordNotifier v. 1.1.1" );
         $payload = array ( "embeds" =>
             array (
                 ["title" => $title, "color" => $embed_color, "description" => $description, "footer" => $footer]
