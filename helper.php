@@ -125,10 +125,9 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
         global $ID;
         global $conf;
         $oldRev = $event -> data['oldRevision'];
-        $page = $event -> data['id'];
-        if ( ( $conf['userewrite'] == 1 || $conf['userewrite'] == 2 ) && $conf['useslash'] == true ) {
-            return str_replace ( ":", "/", $page );
-        }
+		$page = $event -> data['id'];
+		if ( ( $conf['userewrite'] == 1 || $conf['userewrite'] == 2 ) && $conf['useslash'] == true )
+			$page = str_replace ( ":", "/", $page );
         switch ( $conf['userewrite'] ) {
             case 0:
                 $url = DOKU_URL . "doku.php?id={$page}";
