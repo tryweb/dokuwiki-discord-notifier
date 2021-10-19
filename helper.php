@@ -38,7 +38,7 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
                     return true;
                 }
             }
-	    return false;
+            return false;
         } else {
             return true;
         }
