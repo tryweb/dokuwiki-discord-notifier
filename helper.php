@@ -33,8 +33,12 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
         $validNamespaces = $this -> getConf ( 'namespaces' );
         if ( !empty ( $validNamespaces ) ) {
             $validNamespacesArr = explode ( ',', $validNamespaces );
-            $thisNamespaceArr = explode ( ':', $INFO['namespace'] );
-            return in_array ( $thisNamespaceArr[0], $validNamespacesArr );
+            foreach ( $validNamespacesArr as $namespace ) {
+                if ( strpos( $namespace, $INFO['namespace'] ) === 0 ) {
+                    return true;
+                }
+            }
+            return false;
         } else {
             return true;
         }
