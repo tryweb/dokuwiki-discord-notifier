@@ -159,38 +159,44 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
     
     public function submit_payload ( ) {
         global $conf;
+
+	// extract separate webhook URLs
+	$webhooks_array = explode( ';', $this -> getConf ( 'webhook' ) );
+	foreach ( $webhooks_array as $webhook ) {
         
-        // init curl
-        $ch = curl_init ( $this -> getConf ( 'webhook' ) );
-        
-        // use proxy if defined
-        $proxy = $conf['proxy'];
-        if ( !empty ( $proxy['host'] ) ) {
-            // configure proxy address and port
-            $proxyAddress = $proxy['host'] . ':' . $proxy['port'];
-            curl_setopt ( $ch, CURLOPT_PROXY, $proxyAddress );
-            curl_setopt ( $ch, CURLOPT_FOLLOWLOCATION, 1 );
-            curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, false );
-            
-            // include username and password if defined
-            if ( !empty ( $proxy['user'] ) && !empty ( $proxy['pass'] ) ) {
-                $proxyAuth = $proxy['user'] . ':' . conf_decodeString ( $proxy['port'] );
-                curl_setopt ( $ch, CURLOPT_PROXYUSERPWD, $proxyAuth );
-            }
-            
-        }
-        
-        // submit payload
-        curl_setopt ( $ch, CURLOPT_CUSTOMREQUEST, "POST" );
-        $json_payload = json_encode ( $this->_payload );
-        $payload_length = 'Content-length: ' . mb_strlen ( $json_payload );
-        curl_setopt ( $ch, CURLOPT_HTTPHEADER, array ( 'Content-type: application/json', $payload_length ) );
-        curl_setopt ( $ch, CURLOPT_POSTFIELDS, $json_payload );
-        curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, true );
-        curl_exec ( $ch );
-        
-        // close curl
-        Curl_close ( $ch );
+		// init curl
+		$ch = curl_init ( $webhook );
+		
+		// use proxy if defined
+		$proxy = $conf['proxy'];
+		if ( !empty ( $proxy['host'] ) ) {
+		    // configure proxy address and port
+		    $proxyAddress = $proxy['host'] . ':' . $proxy['port'];
+		    curl_setopt ( $ch, CURLOPT_PROXY, $proxyAddress );
+		    curl_setopt ( $ch, CURLOPT_FOLLOWLOCATION, 1 );
+		    curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, false );
+		    
+		    // include username and password if defined
+		    if ( !empty ( $proxy['user'] ) && !empty ( $proxy['pass'] ) ) {
+			$proxyAuth = $proxy['user'] . ':' . conf_decodeString ( $proxy['port'] );
+			curl_setopt ( $ch, CURLOPT_PROXYUSERPWD, $proxyAuth );
+		    }
+		    
+		}
+		
+		// submit payload
+		curl_setopt ( $ch, CURLOPT_CUSTOMREQUEST, "POST" );
+		$json_payload = json_encode ( $this->_payload );
+		$payload_length = 'Content-length: ' . mb_strlen ( $json_payload );
+		curl_setopt ( $ch, CURLOPT_HTTPHEADER, array ( 'Content-type: application/json', $payload_length ) );
+		curl_setopt ( $ch, CURLOPT_POSTFIELDS, $json_payload );
+		curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, true );
+		curl_exec ( $ch );
+		
+		// close curl
+		Curl_close ( $ch );
+
+	}
         
     }
     
