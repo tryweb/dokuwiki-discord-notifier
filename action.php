@@ -21,10 +21,11 @@ class action_plugin_discordnotifier extends DokuWiki_Action_Plugin {
 	}
 
 	function _handle ( Doku_Event $event, $param ) {
-	    /** @var helper_plugin_approve $helper */
-	    $helper = plugin_load('helper', 'discordnotifier');
+		/** @var helper_plugin_approve $helper */
+		$helper = plugin_load('helper', 'discordnotifier');
+
 		// filter writes to attic
-	    if ( $helper -> attic_write ( $event -> data['file'] ) ) return;
+		if ( $helper -> attic_write ( $event -> data['file'] ) ) return;
 
 		// filter namespace
 		if ( !$helper -> valid_namespace ( ) ) return;
