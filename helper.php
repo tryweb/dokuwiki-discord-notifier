@@ -200,20 +200,4 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
         
     }
     
-    public function shouldBeSend($filename){
-        $send = true;
-        if($this -> attic_write ( $filename )) $send = false;
-        if(!$this -> valid_namespace ( )) $send = false;
-        return $send;
-    }
-
-    public function sendUpdate($event) {
-        
-        if(!($this->shouldBeSend($event -> data['file']) && !$this -> set_event ( $event ))) return ;
-        // set payload text
-        $this -> set_payload_text ( $event );
-        
-        // submit payload
-        $helper -> submit_payload ( );
-    }
 }
