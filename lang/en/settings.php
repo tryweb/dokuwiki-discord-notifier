@@ -16,4 +16,5 @@ $lang['notify_edit'] = "Notify when pages are edited";
 $lang['notify_edit_minor'] = "Notify when pages are edited even with minor changes tag";
 $lang['notify_delete'] = "Notify when pages are deleted";
 $lang['notify_show_summary'] = "Display summary when a page is edited";
+$lang['notify_show_name'] = "Name to display in notification";
 $lang['webhook'] = "Discord Incoming Webhook URL";
