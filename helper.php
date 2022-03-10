@@ -98,7 +98,13 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
                 break;
         }
         
-        $user = $INFO['userinfo']['name'];
+	if ( $this -> getConf ( 'notify_show_name' ) === 'real name' ) {
+		$user = $INFO['userinfo']['name'];
+	} elseif ( $this -> getConf ( 'notify_show_name' ) === 'username' ) {
+		$user = $_SERVER['REMOTE_USER'];
+	} else {
+		throw new Exception('invalid notify_show_name value');
+	}
         $link = $this -> _get_url ( $event, null );
         $page = $event -> data['id'];
         $description = "{$user} {$event_name} [__{$page}__]({$link})";
