@@ -1,7 +1,7 @@
 base   discordnotifier
 author zTeeed
 email  aurelien@duboc.xyz
-date   2020-10-19
+date   2022-03-20
 name   Discord Notifier
 desc   Notify page events via Discord
 url    https://www.github.com/zteeed/dokuwiki-discord-notifier/
