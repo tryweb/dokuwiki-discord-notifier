@@ -110,8 +110,8 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
         $description = "{$user} {$event_name} [__{$page}__]({$link})";
         
         if ( $this -> _event != 'delete' ) {
-            $oldRev = $INFO['meta']['last_change']['date'];
-            if ( !empty ( $oldRev ) ) {
+            if ( isset ( $INFO['meta']['last_change'] ) ) {
+                $oldRev = $INFO['meta']['last_change']['date'];
                 $diffURL = $this -> _get_url ( $event, $oldRev );
                 $description .= " \([" . $this -> getLang ( 'compare' ) . "]({$diffURL})\)";
             }
