@@ -6,14 +6,6 @@
  *
  */
 
-if ( !defined ( 'DOKU_INC' ) ) die ( );
-
-//require_once ( DOKU_INC.'inc/changelog.php' );
-
-if ( !defined ( 'DOKU_LF' ) ) define ( 'DOKU_LF', "\n" );
-if ( !defined ( 'DOKU_TAB' ) ) define ( 'DOKU_TAB', "\t" );
-if ( !defined ( 'DOKU_PLUGIN' ) ) define ( 'DOKU_PLUGIN', DOKU_INC . 'lib/plugins/' );
-
 class action_plugin_discordnotifier extends DokuWiki_Action_Plugin {
 
 	function register ( Doku_Event_Handler $controller ) {

@@ -1,7 +1,5 @@
 <?php
 
-// must be run within Dokuwiki
-if (!defined('DOKU_INC')) die();
 class helper_plugin_discordnotifier extends DokuWiki_Plugin {
     
     var $_event = null;
@@ -101,7 +99,8 @@ class helper_plugin_discordnotifier extends DokuWiki_Plugin {
 	if ( $this -> getConf ( 'notify_show_name' ) === 'real name' ) {
 		$user = $INFO['userinfo']['name'];
 	} elseif ( $this -> getConf ( 'notify_show_name' ) === 'username' ) {
-		$user = $_SERVER['REMOTE_USER'];
+		global $INPUT;
+		$user = $INPUT->server->str('REMOTE_USER');
 	} else {
 		throw new Exception('invalid notify_show_name value');
 	}
